@@ -3,11 +3,11 @@ require 'chunky_png'
 require 'http'
 require 'json'
 
-get '/' do
+get '/activity/:network/:address' do
   content_type = 'image/png'
   png = ChunkyPNG::Image.new(270, 270, ChunkyPNG::Color::TRANSPARENT)
 
-  buckets = getActivity
+  buckets = getActivityByNetworkAndAddress(params[:network], params[:address])
   bucket_number = 1
   (0..8).each do |j|
     (0..8).each do |i|
@@ -25,9 +25,12 @@ get '/' do
   send_file 'filename.png'
 end
 
-# TODO: pass in the desired number of buckets
-def getActivity
-  activity = HTTP.get("https://api-rinkeby.etherscan.io/api?module=account&action=txlist&address=0x363Cd931403c4A7251E064bD26E7542ea9699f5c&startblock=0&endblock=99999999&page=1&offset=1000&sort=asc&apikey=#{ENV['ETHERSCAN_API_KEY']}").to_s
+def getActivityByNetworkAndAddress(network, address)
+  endpoint = "api"
+  if (network.eql?("rinkeby"))
+    endpoint = "api-rinkeby"
+  end
+  activity = HTTP.get("https://#{endpoint}.etherscan.io/api?module=account&action=txlist&address=#{address}&startblock=0&endblock=99999999&page=1&offset=1000&sort=asc&apikey=#{ENV['ETHERSCAN_API_KEY']}").to_s
   results = JSON.parse(activity)['result']
   start_date = (Date.today - 81).to_time.to_i
   end_date = Date.today.to_time.to_i
