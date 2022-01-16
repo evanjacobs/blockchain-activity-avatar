@@ -1,3 +1,6 @@
 source 'https://rubygems.org'
 gem 'sinatra'
 gem 'chunky_png'
+gem 'http'
+gem 'json'
+gem 'date'
