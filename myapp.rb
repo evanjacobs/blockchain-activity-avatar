@@ -2,6 +2,8 @@ require 'sinatra'
 require 'chunky_png'
 require 'http'
 require 'json'
+require 'open-uri'
+require 'nokogiri'
 
 get '/activity/:network/:address' do
   content_type = 'image/png'
@@ -30,6 +32,12 @@ def getActivityByNetworkAndAddress(network, address)
   if (network.eql?("rinkeby"))
     endpoint = "api-rinkeby"
   end
+
+  if (address.end_with?('.eth'))
+    address = Nokogiri::HTML(URI.open("https://etherscan.io/enslookup-search?search=#{address}"))
+    address = address.css('section#ContentPlaceHolder1_ensNameResult div.alert span a')[0].text
+  end
+
   activity = HTTP.get("https://#{endpoint}.etherscan.io/api?module=account&action=txlist&address=#{address}&startblock=0&endblock=99999999&page=1&offset=1000&sort=asc&apikey=#{ENV['ETHERSCAN_API_KEY']}").to_s
   results = JSON.parse(activity)['result']
   start_date = (Date.today - 81).to_time.to_i
